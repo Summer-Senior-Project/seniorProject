@@ -8,6 +8,7 @@ export default function UploadPage() {
   const [chartUrl, setChartUrl] = useState(null);
   const [file, setFile] = useState(null);
   const [uploadStatus, setUploadStatus] = useState('');
+  const [circlePackingData, setCirclePackingData] = useState(null);
   const navigate = useNavigate();
 
   const onDrop = (acceptedFiles) => {
@@ -33,7 +34,7 @@ export default function UploadPage() {
        try {
     setUploadStatus('Uploading...');
     const response = await axios.post(
-      'http://localhost:5000/upload', 
+      'http://127.0.0.1:5000/upload', 
       formData,
       {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -42,10 +43,13 @@ export default function UploadPage() {
 
     console.log('Response:', response.data);
     setUploadStatus('Upload successful!');
-    setChartUrl(`http://localhost:5000${response.data.chart_url}`);
+    setChartUrl(`http://127.0.0.1:5000${response.data.chart_url}`);
+    setCirclePackingData(response.data.circle_packing_data);
     navigate('/results', {
       state: {
-        chartUrl: `http://localhost:5000${response.data.chart_url}`,
+        chartUrl: `http://127.0.0.1:5000${response.data.chart_url}`,
+        circlePackingData: response.data.circle_packing_data,
+        sankeyData: response.data.sankey_data,
       },
     });
 

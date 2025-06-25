@@ -1,10 +1,14 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import CirclePackingChart from "./CirclePackingChart";
+import SankeyDiagram from "./SankeyDiagram";
 
 export default function ResultPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const chartUrl = location.state?.chartUrl;
+  const circlePackingData = location.state?.circlePackingData;
+  const sankeyData = location.state?.sankeyData;
 
   const navButtonStyle = {
     background: 'none',
@@ -83,6 +87,22 @@ export default function ResultPage() {
           </div>
         ) : (
           <p>No chart data found.</p>
+        )}
+
+        {/* Render Circle Packing Chart */}
+        {circlePackingData && (
+          <div style={{ marginTop: "2rem" }}>
+            <h3>Circle Packing Chart</h3>
+            <CirclePackingChart data={circlePackingData} width={600} height={600} />
+          </div>
+        )}
+
+        {/* Render Sankey Diagram */}
+        {sankeyData && (
+          <div style={{ marginTop: "2rem" }}>
+            <h3>Sankey Diagram</h3>
+            <SankeyDiagram data={sankeyData} width={700} height={400} />
+          </div>
         )}
       </div>
     </div>

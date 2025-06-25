@@ -7,13 +7,12 @@ from collections import defaultdict
 import re
 from PIL import Image
 import pytesseract
+import sys
 
 # If you installed Tesseract in a different location, update the path below.
-try:
+if sys.platform == "win32":
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-except Exception:
-    print("Tesseract command not found. Please ensure Tesseract is installed and the path is correct.")
-    pass
+
 
 # Define the list of known merchant categories from expense statement
 KNOWN_MERCHANT_CATEGORIES = [
@@ -92,9 +91,22 @@ def parse_pdf(filepath):
         print("\n--- No transactions were categorized as 'Other'. ---\n")
         
     # --- Chart Generation ---
-    del categories["Other"]
+    if "Other" in categories:
+        del categories["Other"]
     labels = list(categories.keys())
     values = list(categories.values())
+
+    # Prepare hierarchical data for circle packing
+    children = [{"name": label, "value": value} for label, value in categories.items()]
+    circle_packing_data = {"name": "Expenses", "children": children}
+
+    # --- Sankey Data Generation ---
+    # Node 0: "Total Expenses", then one node per category
+    sankey_nodes = [{"name": "Total Expenses"}] + [{"name": label} for label in categories.keys()]
+    sankey_links = [
+        {"source": 0, "target": i + 1, "value": value}
+        for i, value in enumerate(categories.values())
+    ]
 
     plt.figure(figsize=(10, 8))
     plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=140)
@@ -107,4 +119,11 @@ def parse_pdf(filepath):
     plt.savefig(chart_path)
     plt.close()
 
-    return {"chart_url": "/static/pie_chart.png"}
+    return {
+        "chart_url": "/static/pie_chart.png",
+        "circle_packing_data": circle_packing_data,
+        "sankey_data": {
+            "nodes": sankey_nodes,
+            "links": sankey_links
+        }
+    }
